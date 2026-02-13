@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Presenter</title>
+  <style>
+    body { margin: 0; font-family: system-ui; display: grid; grid-template-columns: 2fr 1fr; height: 100vh; gap: 12px; padding: 12px; box-sizing: border-box; }
+    #left { background:#fff; border:1px solid #ddd; border-radius: 8px; display:flex; align-items:center; justify-content:center; }
+    #right { display: grid; grid-template-rows: auto 1fr auto; gap: 12px; }
+    #nextBox { border:1px solid #ddd; border-radius:8px; padding:8px; }
+    #memo { width:100%; height:100%; box-sizing:border-box; font-size: 14px; }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
+    button { padding: 8px 10px; }
+    canvas { max-width: 100%; max-height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="left">
+    <canvas id="curCanvas"></canvas>
+  </div>
+
+  <div id="right">
+    <div class="row">
+      <input id="file" type="file" accept="application/pdf" />
+      <button id="openAudience">Open Audience</button>
+      <button id="prev">←</button>
+      <button id="next">→</button>
+      <span id="pageInfo">- / -</span>
+      <span id="timer">00:00</span>
+    </div>
+
+    <div id="nextBox">
+      <div style="font-weight:600; margin-bottom:6px;">Next</div>
+      <canvas id="nextCanvas"></canvas>
+    </div>
+
+    <div>
+      <div style="font-weight:600; margin-bottom:6px;">Notes (per page)</div>
+      <textarea id="memo" placeholder="このページのメモ…"></textarea>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
