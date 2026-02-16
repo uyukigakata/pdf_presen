@@ -1,4 +1,5 @@
 import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.mjs";
+
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.mjs";
 
@@ -7,30 +8,42 @@ const overlay = document.getElementById("overlay");
 
 let pdfDoc = null;
 let pageNum = 1;
-let pdfUrl = null;
 
 async function renderAudiencePage(n) {
   if (!pdfDoc) return;
+
   const page = await pdfDoc.getPage(n);
 
-  // 画面にフィット（簡易）
-  const scale = 2.0;
-  const viewport = page.getViewport({ scale });
+  // 画面にフィットさせる
+  const containerWidth = window.innerWidth;
+  const containerHeight = window.innerHeight;
+
+  const viewport = page.getViewport({ scale: 1 });
+  const scale = Math.min(
+    containerWidth / viewport.width,
+    containerHeight / viewport.height
+  );
+
+  const scaledViewport = page.getViewport({ scale });
 
   const ctx = audCanvas.getContext("2d");
-  audCanvas.width = Math.floor(viewport.width);
-  audCanvas.height = Math.floor(viewport.height);
 
-  // overlayも同サイズに
-  overlay.width = audCanvas.width;
-  overlay.height = audCanvas.height;
+  audCanvas.width = scaledViewport.width;
+  audCanvas.height = scaledViewport.height;
 
-  await page.render({ canvasContext: ctx, viewport }).promise;
+  overlay.width = scaledViewport.width;
+  overlay.height = scaledViewport.height;
+
+  await page.render({
+    canvasContext: ctx,
+    viewport: scaledViewport,
+  }).promise;
 }
 
 function drawLaser(xNorm, yNorm) {
   const ctx = overlay.getContext("2d");
   ctx.clearRect(0, 0, overlay.width, overlay.height);
+
   const x = xNorm * overlay.width;
   const y = yNorm * overlay.height;
 
@@ -42,12 +55,12 @@ function drawLaser(xNorm, yNorm) {
 
 window.addEventListener("message", async (ev) => {
   const msg = ev.data;
-  if (!msg || !msg.type) return;
+  if (!msg?.type) return;
 
   if (msg.type === "PDF_READY") {
-    pdfUrl = msg.pdfUrl;
-    const loadingTask = pdfjsLib.getDocument(pdfUrl);
+    const loadingTask = pdfjsLib.getDocument(msg.pdfUrl);
     pdfDoc = await loadingTask.promise;
+    pageNum = 1;
     await renderAudiencePage(pageNum);
   }
 
